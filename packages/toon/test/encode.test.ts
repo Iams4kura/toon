@@ -1,7 +1,7 @@
 import type { ResolvedEncodeOptions } from '../src/types'
 import type { TestCase } from './types'
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_DELIMITER, encode } from '../src/index'
+import { decode, DEFAULT_DELIMITER, encode } from '../src/index'
 import { loadFixtures } from './utils'
 
 // Loaded via `JSON.parse`: a Vite JSON-to-literal transform would turn the
@@ -36,6 +36,15 @@ for (const fixtures of fixtureFiles) {
     }
   })
 }
+
+describe('root strings beginning with a byte-order mark', () => {
+  for (const value of ['\uFEFF8', '\uFEFFabc', '\uFEFF']) {
+    it(`preserves ${JSON.stringify(value)} through encoding and decoding`, () => {
+      expect(encode(value)).toBe(JSON.stringify(value))
+      expect(decode(encode(value))).toBe(value)
+    })
+  }
+})
 
 function resolveEncodeOptions(options?: TestCase['options']): ResolvedEncodeOptions {
   return {

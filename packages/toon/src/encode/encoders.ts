@@ -1,6 +1,7 @@
 import type { Depth, FieldNode, JsonArray, JsonObject, JsonValue, ResolvedEncodeOptions } from '../types.ts'
 import type { EncodablePrimitive } from './raw-string.ts'
-import { LIST_ITEM_MARKER, LIST_ITEM_PREFIX } from '../constants.ts'
+import { DOUBLE_QUOTE, LIST_ITEM_MARKER, LIST_ITEM_PREFIX } from '../constants.ts'
+import { escapeString } from '../shared/string-utils.ts'
 import { isArrayOfArrays, isArrayOfObjects, isArrayOfPrimitives, isEmptyObject, isEncodablePrimitive, isJsonArray, isJsonObject } from './normalize.ts'
 import { encodeAndJoinPrimitives, encodeKey, encodePrimitive, formatHeader } from './primitives.ts'
 import { collectRowLeaves, extractKeyedTabularFields, extractTabularFields } from './tabular.ts'
@@ -9,7 +10,10 @@ import { collectRowLeaves, extractKeyedTabularFields, extractTabularFields } fro
 
 export function* encodeJsonValue(value: JsonValue, options: ResolvedEncodeOptions, depth: Depth): Generator<string> {
   if (isEncodablePrimitive(value)) {
-    const encodedPrimitive = encodePrimitive(value, options.delimiter)
+    // A leading U+FEFF would be consumed as the document BOM by the decoder.
+    const encodedPrimitive = typeof value === 'string' && value.startsWith('\uFEFF')
+      ? `${DOUBLE_QUOTE}${escapeString(value)}${DOUBLE_QUOTE}`
+      : encodePrimitive(value, options.delimiter)
 
     if (encodedPrimitive !== '')
       yield encodedPrimitive
