@@ -304,6 +304,7 @@ TOON quotes strings **only when necessary** to maximize token efficiency. A stri
 - It contains the relevant delimiter (the active delimiter inside an array scope, or the document delimiter elsewhere)
 - It equals `"-"` or starts with `"-"` followed by any character
 - It equals `"#"` or starts with `"#"` (the line would read as a comment)
+- It is the root value and starts with U+FEFF (the decoder would strip it as a byte-order mark)
 
 Otherwise, strings can be unquoted. Unicode, emoji, and strings with internal (non-leading/trailing) spaces are safe unquoted:
 
