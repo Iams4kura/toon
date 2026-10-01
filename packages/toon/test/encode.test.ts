@@ -37,13 +37,17 @@ for (const fixtures of fixtureFiles) {
   })
 }
 
-describe('root strings beginning with a byte-order mark', () => {
-  for (const value of ['\uFEFF8', '\uFEFFabc', '\uFEFF']) {
-    it(`preserves ${JSON.stringify(value)} through encoding and decoding`, () => {
-      expect(encode(value)).toBe(JSON.stringify(value))
+describe('root string quoting', () => {
+  for (const [label, value] of [['\\uFEFF8', '\uFEFF8'], ['\\uFEFFabc', '\uFEFFabc'], ['\\uFEFF#x', '\uFEFF#x'], ['\\uFEFF', '\uFEFF']]) {
+    it(`quotes "${label}" so the leading byte-order mark survives decoding`, () => {
+      expect(encode(value)).toBe(`"${value}"`)
       expect(decode(encode(value))).toBe(value)
     })
   }
+
+  it('leaves a field value starting with a byte-order mark unquoted', () => {
+    expect(encode({ a: '\uFEFFx' })).toBe('a: \uFEFFx')
+  })
 })
 
 function resolveEncodeOptions(options?: TestCase['options']): ResolvedEncodeOptions {
